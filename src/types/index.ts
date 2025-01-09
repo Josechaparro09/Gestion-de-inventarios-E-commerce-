@@ -1,4 +1,20 @@
 //src/types/index.ts
+export type Store = {
+  id: string;
+  name: string;
+  description?: string;
+  address?: string;
+  created_at: string;
+  user_id: string;
+};
+
+export type StoreUser = {
+  store_id: string;
+  user_id: string;
+  role: 'owner' | 'manager' | 'staff';
+};
+
+// Update Product type to include store_id
 export type Product = {
   id: string;
   name: string;
@@ -9,6 +25,7 @@ export type Product = {
   category: string;
   barcode: string;
   user_id?: string;
+  store_id: string;  // New field
 };
 
 export type ViewMode = 'cards' | 'table';

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Upload } from 'lucide-react';
 import { CATEGORIES } from '../types';
 import { generateBarcode } from '../lib/utils';
+import { optimizeImage } from '../lib/imageUtils';
 
 interface ProductFormProps {
   onSubmit: (data: any) => Promise<void>;
@@ -20,9 +21,18 @@ export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
     reset
-  } = useForm({
+  } = useForm<{
+    name: string;
+    unitCost: number;
+    salePrice: number;
+    stock: number;
+    category: string;
+    barcode: string;
+    image: File | Blob | undefined;
+  }>({
     defaultValues: {
       name: '',
       unitCost: 0,
@@ -61,12 +71,32 @@ export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
     loadProduct();
   }, [id, fetchProduct, reset]);
 
+  const handleImageUpload = async (file: File) => {
+    try {
+      // Optimize and compress image
+      const optimizedImage = await optimizeImage(file);
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(optimizedImage);
+      setImagePreview(previewUrl);
+      
+      // Set form value to the optimized image
+      setValue('image', optimizedImage);
+    } catch (error) {
+      console.error('Image optimization failed:', error);
+      // Fallback to original file if optimization fails
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      setValue('image', file);
+    }
+  };
+
   const onFormSubmit = async (data: any) => {
     try {
       const formData = {
         ...data,
         id,
-        image: data.image?.[0] || imagePreview
+        image: data.image instanceof File ? data.image : imagePreview
       };
       await onSubmit(formData);
       navigate('/products/list');
@@ -216,17 +246,16 @@ export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
                       <input
                         type="file"
                         {...register('image', {
-                          required: id ? false : 'Imagen es requerida'
+                          required: id ? false : 'Imagen es requerida',
+                          onChange: (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleImageUpload(file);
+                            }
+                          }
                         })}
                         accept="image/*"
                         className="sr-only"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const url = URL.createObjectURL(file);
-                            setImagePreview(url);
-                          }
-                        }}
                       />
                     </label>
                   </div>
