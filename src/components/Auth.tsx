@@ -1,13 +1,12 @@
-// src\components\Auth.tsx
+// src/components/Auth.tsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '../contexts/ToastContext';
 import { signIn, signUp } from '../lib/supabase';
-
-interface AuthProps {
-  onSuccess: () => void;
-}
-
-export function Auth({ onSuccess }: AuthProps) {
-  const [isSignUp] = useState(false);
+export function Auth() {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,13 +22,36 @@ export function Auth({ onSuccess }: AuthProps) {
         ? await signUp(email, password)
         : await signIn(email, password);
 
-      if (error) throw error;
-      onSuccess();
+      if (error) {
+        setError(error.message);
+        showToast({
+          message: error.message,
+          type: 'error'
+        });
+        return;
+      }
+
+      showToast({
+        message: isSignUp ? 'Registro exitoso' : 'Inicio de sesión exitoso',
+        type: 'success'
+      });
+
+      // Navigate to the main app after successful authentication
+      navigate('/products/list');
     } catch (err: any) {
       setError(err.message);
+      showToast({
+        message: err.message,
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleAuthMode = () => {
+    setIsSignUp(!isSignUp);
+    setError('');
   };
 
   return (
@@ -79,7 +101,17 @@ export function Auth({ onSuccess }: AuthProps) {
             </button>
           </div>
 
-          
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={toggleAuthMode}
+              className="text-sm text-teal-600 hover:text-teal-500"
+            >
+              {isSignUp 
+                ? '¿Ya tienes una cuenta? Inicia sesión' 
+                : '¿No tienes cuenta? Regístrate'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

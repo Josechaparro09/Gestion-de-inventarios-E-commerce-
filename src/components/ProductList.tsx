@@ -1,23 +1,65 @@
-// src/components/ProductList.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Edit2, Trash2, Barcode, Search } from 'lucide-react';
 import { Product } from '../types';
 import { formatCurrency } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { InventoryDashboard } from './InventoryDashboard';
+import { useStore } from '../contexts/StoreContext';
+import { useToast } from '../contexts/ToastContext';
+import { supabase } from '../lib/supabase';
+import { Modal } from './Modal';
+import { BarcodeGenerator } from './BarcodeGenerator';
 
-interface ProductListProps {
-  products: Product[];
-  onDelete: (product: Product) => void;
-  onShowBarcode: (product: Product) => void;
-}
-
-export function ProductList({
-  products,
-  onDelete,
-  onShowBarcode
-}: ProductListProps) {
+export function ProductList() {
+  const { products, currentStore, refreshProducts } = useStore();
+  const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showBarcodeModal, setShowBarcodeModal] = useState(false);
+  
+  useEffect(() => {
+    refreshProducts();
+  }, []);
+  
+  const handleDeleteProduct = async (product: Product) => {
+    try {
+      if (!currentStore) {
+        throw new Error('No store selected');
+      }
+
+      const confirmDelete = window.confirm(
+        `¿Estás seguro de eliminar el producto "${product.name}"? Esta acción no se puede deshacer.`
+      );
+
+      if (!confirmDelete) return;
+
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', product.id)
+        .eq('store_id', currentStore.id);
+
+      if (error) throw error;
+
+      showToast({
+        message: 'Producto eliminado exitosamente',
+        type: 'success'
+      });
+      
+      await refreshProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      showToast({
+        message: `No se pudo eliminar el producto: ${(error as any).message}`,
+        type: 'error'
+      });
+    }
+  };
+
+  const handleShowBarcode = (product: Product) => {
+    setSelectedProduct(product);
+    setShowBarcodeModal(true);
+  };
 
   const filteredProducts = useMemo(() => {
     return products.filter(product => 
@@ -122,14 +164,17 @@ export function ProductList({
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className={`text-sm font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    <div className={`text-sm font-medium ${
+                      product.stock > 10 ? 'text-green-600' : 
+                      product.stock > 0 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
                       {product.stock}
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex space-x-3">
                       <button
-                        onClick={() => onShowBarcode(product)}
+                        onClick={() => handleShowBarcode(product)}
                         className="text-gray-600 hover:text-gray-900"
                         title="Ver código"
                       >
@@ -143,7 +188,7 @@ export function ProductList({
                         <Edit2 className="w-5 h-5" />
                       </Link>
                       <button
-                        onClick={() => onDelete(product)}
+                        onClick={() => handleDeleteProduct(product)}
                         className="text-red-600 hover:text-red-900"
                         title="Eliminar"
                       >
@@ -163,6 +208,21 @@ export function ProductList({
           </div>
         )}
       </div>
+
+      {/* Barcode Modal */}
+      <Modal
+        isOpen={showBarcodeModal}
+        onClose={() => setShowBarcodeModal(false)}
+        title="Código de Barras del Producto"
+      >
+        {selectedProduct && (
+          <BarcodeGenerator
+            code={selectedProduct.barcode}
+            onBack={() => setShowBarcodeModal(false)}
+            onFinish={() => setShowBarcodeModal(false)}
+          />
+        )}
+      </Modal>
     </div>
   );
 }

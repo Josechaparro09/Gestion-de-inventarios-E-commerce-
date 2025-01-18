@@ -1,6 +1,15 @@
 // src/components/Sidebar.tsx
 import { useState } from 'react';
-import { Package2, List, LogOut, Store, SwitchCamera, Settings } from 'lucide-react';
+import { 
+  Package2, 
+  List, 
+  LogOut, 
+  Store, 
+  SwitchCamera, 
+  Settings,
+  PackageOpen,
+  RefreshCw
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Store as StoreType } from '../types';
@@ -22,11 +31,21 @@ export function Sidebar({
   const location = useLocation();
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
 
+  // Helper function to determine if a route is active
+  const isActiveRoute = (route: string) => {
+    return location.pathname === route;
+  };
+
   return (
     <>
       <aside className="fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-teal-900 to-teal-800 text-white flex flex-col">
+        {/* Header with Logo and Store Switcher */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-teal-700">
-          <img src="/images/Logo White.png" alt="Netxel" className="h-8" />
+          <img 
+            src="/images/Logo White.png" 
+            alt="Netxel" 
+            className="h-8" 
+          />
           
           {/* Store Switcher */}
           {currentStore && (
@@ -47,7 +66,9 @@ export function Sidebar({
             <div className="flex items-center space-x-3">
               <Store className="w-6 h-6 text-teal-300" />
               <div>
-                <p className="text-sm font-medium truncate">{currentStore.name}</p>
+                <p className="text-sm font-medium truncate">
+                  {currentStore.name}
+                </p>
                 <p className="text-xs text-teal-200 truncate">
                   {currentStore.description || 'Sin descripción'}
                 </p>
@@ -56,10 +77,12 @@ export function Sidebar({
           </div>
         )}
 
+        {/* Navigation Menu */}
         <nav className="flex-1 p-4">
           <div className="space-y-2">
+            {/* Productos Section */}
             <div className="px-3 py-2 text-sm text-teal-300 uppercase tracking-wider">
-              Menú
+              Productos
             </div>
             
             <div className="space-y-1">
@@ -67,8 +90,8 @@ export function Sidebar({
                 to="/products/add"
                 className={cn(
                   "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
-                  location.pathname === '/products/add'
-                    ? 'bg-teal-700 text-white'
+                  isActiveRoute('/products/add')
+                    ? 'bg-teal-700 text-white' 
                     : 'text-teal-100 hover:bg-teal-800'
                 )}
               >
@@ -80,21 +103,61 @@ export function Sidebar({
                 to="/products/list"
                 className={cn(
                   "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
-                  location.pathname === '/products/list'
-                    ? 'bg-teal-700 text-white'
+                  isActiveRoute('/products/list')
+                    ? 'bg-teal-700 text-white' 
                     : 'text-teal-100 hover:bg-teal-800'
                 )}
               >
                 <List className="w-5 h-5" />
                 <span>Lista de productos</span>
               </Link>
+            </div>
 
+            {/* Inventory Section */}
+            <div className="px-3 py-2 text-sm text-teal-300 uppercase tracking-wider">
+              Inventario
+            </div>
+            
+            <div className="space-y-1">
+              <Link
+                to="/inventory/movements"
+                className={cn(
+                  "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
+                  isActiveRoute('/inventory/movements')
+                    ? 'bg-teal-700 text-white' 
+                    : 'text-teal-100 hover:bg-teal-800'
+                )}
+              >
+                <PackageOpen className="w-5 h-5" />
+                <span>Movimientos</span>
+              </Link>
+
+              <Link
+                to="/inventory/history"
+                className={cn(
+                  "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
+                  isActiveRoute('/inventory/history')
+                    ? 'bg-teal-700 text-white' 
+                    : 'text-teal-100 hover:bg-teal-800'
+                )}
+              >
+                <RefreshCw className="w-5 h-5" />
+                <span>Historial de Movimientos</span>
+              </Link>
+            </div>
+
+            {/* Stores Section */}
+            <div className="px-3 py-2 text-sm text-teal-300 uppercase tracking-wider">
+              Configuración
+            </div>
+            
+            <div className="space-y-1">
               <Link
                 to="/stores"
                 className={cn(
                   "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
-                  location.pathname === '/stores'
-                    ? 'bg-teal-700 text-white'
+                  isActiveRoute('/stores')
+                    ? 'bg-teal-700 text-white' 
                     : 'text-teal-100 hover:bg-teal-800'
                 )}
               >
@@ -105,6 +168,7 @@ export function Sidebar({
           </div>
         </nav>
 
+        {/* Sign Out Section */}
         <div className="p-4 border-t border-teal-700">
           <button
             onClick={onSignOut}
@@ -123,33 +187,41 @@ export function Sidebar({
         title="Seleccionar Tienda"
       >
         <div className="space-y-4">
-          {stores.map((store) => (
-            <button
-              key={store.id}
-              onClick={() => {
-                onStoreChange(store);
-                setIsStoreModalOpen(false);
-              }}
-              className={cn(
-                "w-full text-left px-4 py-3 rounded-lg transition-colors",
-                currentStore?.id === store.id 
-                  ? 'bg-teal-100 text-teal-800'
-                  : 'hover:bg-gray-100'
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-semibold">{store.name}</div>
-                  {store.description && (
-                    <div className="text-sm text-gray-500">{store.description}</div>
+          {stores.length === 0 ? (
+            <div className="text-center py-6 text-gray-500">
+              No tienes tiendas. Crea una tienda primero.
+            </div>
+          ) : (
+            stores.map((store) => (
+              <button
+                key={store.id}
+                onClick={() => {
+                  onStoreChange(store);
+                  setIsStoreModalOpen(false);
+                }}
+                className={cn(
+                  "w-full text-left px-4 py-3 rounded-lg transition-colors",
+                  currentStore?.id === store.id 
+                    ? 'bg-teal-100 text-teal-800'
+                    : 'hover:bg-gray-100'
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">{store.name}</div>
+                    {store.description && (
+                      <div className="text-sm text-gray-500">
+                        {store.description}
+                      </div>
+                    )}
+                  </div>
+                  {currentStore?.id === store.id && (
+                    <Store className="w-5 h-5 text-teal-600" />
                   )}
                 </div>
-                {currentStore?.id === store.id && (
-                  <Store className="w-5 h-5 text-teal-600" />
-                )}
-              </div>
-            </button>
-          ))}
+              </button>
+            ))
+          )}
         </div>
       </Modal>
     </>

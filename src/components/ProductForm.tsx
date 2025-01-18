@@ -3,36 +3,28 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Upload } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { CATEGORIES } from '../types';
 import { generateBarcode } from '../lib/utils';
 import { optimizeImage } from '../lib/imageUtils';
+import { useStore } from '../contexts/StoreContext';
+import { useToast } from '../contexts/ToastContext';
+import { Product } from '../types';
 
-interface ProductFormProps {
-  onSubmit: (data: any) => Promise<void>;
-  fetchProduct?: (id: string) => Promise<any>;
-}
-
-export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
+export function ProductForm() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { currentStore } = useStore();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>('');
   
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
     reset
-  } = useForm<{
-    name: string;
-    unitCost: number;
-    salePrice: number;
-    stock: number;
-    category: string;
-    barcode: string;
-    image: File | Blob | undefined;
-  }>({
+  } = useForm({
     defaultValues: {
       name: '',
       unitCost: 0,
@@ -44,9 +36,28 @@ export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
     }
   });
 
+  // Fetch product for editing
+  const fetchProduct = async (productId: string) => {
+    if (!currentStore) return null;
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .eq('store_id', currentStore.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching product:', error);
+      return null;
+    }
+
+    return data;
+  };
+
   useEffect(() => {
     const loadProduct = async () => {
-      if (id && fetchProduct) {
+      if (id && currentStore) {
         setLoading(true);
         try {
           const product = await fetchProduct(id);
@@ -54,9 +65,9 @@ export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
             setImagePreview(product.image || '');
             reset({
               name: product.name,
-              unitCost: product.unit_cost || product.unitCost,
-              salePrice: product.sale_price || product.salePrice,
-              stock: product.stock,
+              unitCost: Number(product.unit_cost),
+              salePrice: Number(product.sale_price),
+              stock: Number(product.stock),
               category: product.category,
               barcode: product.barcode
             });
@@ -69,39 +80,111 @@ export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
     };
 
     loadProduct();
-  }, [id, fetchProduct, reset]);
+  }, [id, currentStore, reset]);
 
-  const handleImageUpload = async (file: File) => {
+  // Upload image to Supabase storage
+  const uploadImage = async (file: File) => {
+    if (!currentStore) return null;
+
     try {
-      // Optimize and compress image
-      const optimizedImage = await optimizeImage(file);
+      // Optimize image
+      const optimizedBlob = await optimizeImage(file);
       
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(optimizedImage);
-      setImagePreview(previewUrl);
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentStore.id}/${Date.now()}.${fileExt}`;
       
-      // Set form value to the optimized image
-      setValue('image', optimizedImage);
+      // Upload to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, optimizedBlob);
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
     } catch (error) {
-      console.error('Image optimization failed:', error);
-      // Fallback to original file if optimization fails
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-      setValue('image', file);
+      console.error('Image upload error:', error);
+      showToast({ 
+        message: 'Error al cargar la imagen', 
+        type: 'error' 
+      });
+      return null;
     }
   };
 
-  const onFormSubmit = async (data: any) => {
+  // Submit product
+  const onSubmit = async (formData: any) => {
+    if (!currentStore) {
+      showToast({ 
+        message: 'Debe seleccionar una tienda primero', 
+        type: 'error' 
+      });
+      return;
+    }
+
+    setLoading(true);
     try {
-      const formData = {
-        ...data,
-        id,
-        image: data.image instanceof File ? data.image : imagePreview
+      // Handle image upload if new image is provided
+      let imageUrl = imagePreview;
+      if (formData.image && formData.image[0]) {
+        const uploadedImageUrl = await uploadImage(formData.image[0]);
+        if (uploadedImageUrl) imageUrl = uploadedImageUrl;
+      }
+
+      const productData = {
+        name: formData.name,
+        unit_cost: formData.unitCost,
+        sale_price: formData.salePrice,
+        stock: formData.stock,
+        category: formData.category,
+        barcode: formData.barcode,
+        image: imageUrl,
+        store_id: currentStore.id
       };
-      await onSubmit(formData);
+
+      let result;
+      if (id) {
+        // Update existing product
+        const { data, error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = data;
+      } else {
+        // Create new product
+        const { data, error } = await supabase
+          .from('products')
+          .insert(productData)
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = data;
+      }
+
+      showToast({ 
+        message: id ? 'Producto actualizado' : 'Producto creado', 
+        type: 'success' 
+      });
+
       navigate('/products/list');
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Error submitting product:', error);
+      showToast({ 
+        message: 'Error al guardar el producto', 
+        type: 'error' 
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,7 +204,7 @@ export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6 bg-white p-8 rounded-lg shadow-lg">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-8 rounded-lg shadow-lg">
         <div>
           <label className="block text-sm font-medium text-gray-700">
             Nombre
@@ -246,16 +329,17 @@ export function ProductForm({ onSubmit, fetchProduct }: ProductFormProps) {
                       <input
                         type="file"
                         {...register('image', {
-                          required: id ? false : 'Imagen es requerida',
-                          onChange: (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              handleImageUpload(file);
-                            }
-                          }
+                          required: id ? false : 'Imagen es requerida'
                         })}
                         accept="image/*"
                         className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const url = URL.createObjectURL(file);
+                            setImagePreview(url);
+                          }
+                        }}
                       />
                     </label>
                   </div>

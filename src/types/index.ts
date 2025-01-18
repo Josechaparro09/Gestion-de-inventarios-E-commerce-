@@ -25,7 +25,7 @@ export type Product = {
   category: string;
   barcode: string;
   user_id?: string;
-  store_id: string;  // New field
+  store_id?: string;
 };
 
 export type ViewMode = 'cards' | 'table';
@@ -40,6 +40,16 @@ export const CATEGORIES = [
   'Otra'
 ] as const;
 
+export type InventoryMovement = {
+  id?: string;
+  product_id: string;
+  store_id: string;
+  type: 'entrada' | 'salida' | 'devolucion';
+  quantity: number;
+  notes?: string;
+  created_at?: string;
+  user_id: string;
+};
 export type Category = typeof CATEGORIES[number];
 
 export interface BarcodeUtils {

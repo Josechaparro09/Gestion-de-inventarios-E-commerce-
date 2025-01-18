@@ -15,7 +15,7 @@ export function Timeline({ steps, currentStep }: TimelineProps) {
         {steps.map((step, index) => (
           <React.Fragment key={step}>
             {/* Step circle */}
-            <div className="relative">
+            <div className="relativezz">
               <div
                 className={cn(
                   "w-12 h-12 flex items-center justify-center rounded-full border-2 transition-colors",
