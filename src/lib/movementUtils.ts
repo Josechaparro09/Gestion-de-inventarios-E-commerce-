@@ -60,6 +60,9 @@ export async function searchProductByBarcode(barcode: string): Promise<Product |
       .select('*')
       .eq('barcode', barcode)
       .single();
+      console.log(data)
+      data.salePrice=data.sale_price
+      data.unitCost=data.unit_cost 
 
     if (error) {
       console.error('Error searching product:', error);

@@ -62,6 +62,8 @@ export function InventoryMovement() {
 
       const foundProduct = await searchProductByBarcode(barcode);
       if (foundProduct) {
+
+        console.log('Producto encontrado:', foundProduct.salePrice);
         // Verificar si el producto ya está en la lista
         const existingProductIndex = selectedProducts.findIndex(p => p.id === foundProduct.id);
         
