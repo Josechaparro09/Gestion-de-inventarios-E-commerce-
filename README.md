@@ -1,7 +1,6 @@
-# 🏪 Sistema de Gestión de inventario con tiendas
+  # 🏪 Sistema de Gestión de Inventario con tiendas
 
 <div align="center">
-
 
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -141,4 +140,15 @@ Una solución completa y moderna para la gestión de inventario, diseñada para 
    ```bash
    npm run dev
    ```
+
+## 👨‍💻 Autores
+
+<div align="center">
+
+| <img src="https://github.com/Josechaparro09.png" width="100" height="100" alt="Jose Chaparro"> | <img src="https://github.com/Jassia627.png" width="100" height="100" alt="Juan Assia"> |
+|:---:|:---:|
+| **Jose Chaparro** | **Juan Assia** |
+| [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Josechaparro09/) | [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Jassia627/) |
+
+</div>
 
