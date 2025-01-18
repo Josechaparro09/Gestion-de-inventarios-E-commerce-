@@ -4,16 +4,15 @@ import {
   ArrowDownToLine, 
   ArrowUpToLine, 
   RotateCcw, 
-  Filter,
+
   Download 
 } from 'lucide-react';
 import { fetchInventoryMovements } from '../lib/movementUtils';
 import { useStore } from '../contexts/StoreContext';
-import { formatCurrency } from '../lib/utils';
 import Papa from 'papaparse';
 
 export function InventoryMovementsList() {
-  const { currentStore, products } = useStore();
+  const { currentStore } = useStore();
   const [movements, setMovements] = useState<any[]>([]);
   const [totalMovements, setTotalMovements] = useState(0);
   const [filter, setFilter] = useState<'entrada' | 'salida' | 'devolucion' | null>(null);

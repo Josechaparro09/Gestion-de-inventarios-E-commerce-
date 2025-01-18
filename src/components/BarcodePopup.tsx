@@ -11,9 +11,9 @@ export function BarcodePopup({ code, barcodeRef }: BarcodePopupProps) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(code);
-      alert('Code copied to clipboard!');
+      alert('¡Código copiado e el portapapeles!');
     } catch (err) {
-      console.error('Failed to copy code:', err);
+      console.error('Error al copiar código:', err);
     }
   };
 
@@ -43,14 +43,14 @@ export function BarcodePopup({ code, barcodeRef }: BarcodePopupProps) {
           className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
         >
           <Copy className="w-5 h-5 mr-2" />
-          Copy Code
+          Copiar código
         </button>
         <button
           onClick={handleDownload}
           className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
         >
           <Download className="w-5 h-5 mr-2" />
-          Download SVG
+          Descargar SVG
         </button>
       </div>
     </div>

@@ -9,7 +9,6 @@ import { generateBarcode } from '../lib/utils';
 import { optimizeImage } from '../lib/imageUtils';
 import { useStore } from '../contexts/StoreContext';
 import { useToast } from '../contexts/ToastContext';
-import { Product } from '../types';
 
 export function ProductForm() {
   const navigate = useNavigate();
@@ -95,7 +94,7 @@ export function ProductForm() {
       const fileName = `${currentStore.id}/${Date.now()}.${fileExt}`;
       
       // Upload to Supabase storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('product-images')
         .upload(fileName, optimizedBlob);
 
@@ -147,10 +146,9 @@ export function ProductForm() {
         store_id: currentStore.id
       };
 
-      let result;
       if (id) {
         // Update existing product
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('products')
           .update(productData)
           .eq('id', id)
@@ -158,17 +156,15 @@ export function ProductForm() {
           .single();
 
         if (error) throw error;
-        result = data;
       } else {
         // Create new product
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('products')
           .insert(productData)
           .select()
           .single();
 
         if (error) throw error;
-        result = data;
       }
 
       showToast({ 

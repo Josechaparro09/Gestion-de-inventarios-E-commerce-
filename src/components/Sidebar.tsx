@@ -42,7 +42,7 @@ export function Sidebar({
         {/* Header with Logo and Store Switcher */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-teal-700">
           <img 
-            src="/images/Logo White.png" 
+            src="/images/NetxelGreen.svg" 
             alt="Netxel" 
             className="h-8" 
           />
