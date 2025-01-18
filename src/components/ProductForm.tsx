@@ -9,6 +9,9 @@ import { generateBarcode } from '../lib/utils';
 import { optimizeImage } from '../lib/imageUtils';
 import { useStore } from '../contexts/StoreContext';
 import { useToast } from '../contexts/ToastContext';
+import { Modal } from './Modal';
+import { BulkProductImport } from './BulkProductImport';
+
 
 export function ProductForm() {
   const navigate = useNavigate();
@@ -17,6 +20,7 @@ export function ProductForm() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [showImportModal, setShowImportModal] = useState(false);
   
   const {
     register,
@@ -198,7 +202,17 @@ export function ProductForm() {
         <h1 className="text-2xl font-bold text-gray-900">
           {id ? 'Editar producto' : 'Agregar producto'}
         </h1>
+        {!id && (
+  <button
+    onClick={() => setShowImportModal(true)}
+    className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
+  >
+    Importar desde Excel
+  </button>
+)}
       </div>
+
+      
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-8 rounded-lg shadow-lg">
         <div>
@@ -366,6 +380,16 @@ export function ProductForm() {
           </button>
         </div>
       </form>
+      <Modal
+  isOpen={showImportModal}
+  onClose={() => setShowImportModal(false)}
+  title="Importar Productos desde Excel"
+>
+  <BulkProductImport onFinish={() => {
+    setShowImportModal(false);
+    navigate('/products/list');
+  }} />
+</Modal>
     </div>
   );
 }

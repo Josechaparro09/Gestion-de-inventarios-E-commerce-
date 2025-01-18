@@ -19,7 +19,7 @@ export function ProductList() {
   
   useEffect(() => {
     refreshProducts();
-  }, []);
+  }, [refreshProducts]);
   
   const handleDeleteProduct = async (product: Product) => {
     try {

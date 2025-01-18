@@ -31,6 +31,7 @@ export type Product = {
 export type ViewMode = 'cards' | 'table';
 
 export const CATEGORIES = [
+  'Sandalias',
   'Electronica',
   'Moda',
   'Comida',
