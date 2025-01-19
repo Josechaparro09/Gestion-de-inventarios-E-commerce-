@@ -11,6 +11,8 @@ export const supabase = createClient(
 );
 
 export async function signIn(email: string, password: string) {
+  localStorage.removeItem('store');
+  localStorage.removeItem('stores');
   return supabase.auth.signInWithPassword({ email, password });
 }
 
@@ -19,5 +21,7 @@ export async function signUp(email: string, password: string) {
 }
 
 export async function signOut() {
+  localStorage.removeItem('user');
+  localStorage.removeItem('stores');
   return supabase.auth.signOut();
 }
