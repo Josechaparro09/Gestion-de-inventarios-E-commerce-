@@ -12,6 +12,25 @@ Una solución completa y moderna para la gestión de inventario, diseñada para 
 
 </div>
 
+## 📸 Capturas de Pantalla
+*(Haz clic en las imágenes para verlas en tamaño completo)*
+
+### Gestión de Productos e Inventario
+| Generación de Códigos de Barras | Lista de Productos |
+|--------------------------------|-------------------|
+| [![Códigos de Barras](public/images/screenshots/Generacion%20y%20visualizacion%20de%20codigos%20de%20barras.jpeg)](public/images/screenshots/Generacion%20y%20visualizacion%20de%20codigos%20de%20barras.jpeg) | [![Lista de Productos](public/images/screenshots/Lista%20de%20productos.jpeg)](public/images/screenshots/Lista%20de%20productos.jpeg) |
+
+### Control de Inventario
+| Ingreso de Inventario | Egreso de Inventario | Devolución de Inventario |
+|--------------------|-------------------|------------------------|
+| [![Ingreso](public/images/screenshots/Ingreso%20de%20inventario.jpeg)](public/images/screenshots/Ingreso%20de%20inventario.jpeg) | [![Egreso](public/images/screenshots/Egreso%20de%20inventario.jpeg)](public/images/screenshots/Egreso%20de%20inventario.jpeg) | [![Devolución](public/images/screenshots/Devolucion%20de%20inventario.jpeg)](public/images/screenshots/Devolucion%20de%20inventario.jpeg) |
+
+### Gestión Multi-Tienda
+| Gestión de Tiendas |
+|-------------------|
+| [![Gestión de Tiendas](public/images/screenshots/Gestion%20de%20tiendas.jpeg)](public/images/screenshots/Gestion%20de%20tiendas.jpeg) |
+
+
 ## 🛠️ Stack Tecnológico
 
 <div align="center">
